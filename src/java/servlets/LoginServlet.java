@@ -17,12 +17,22 @@ public class LoginServlet extends HttpServlet {
 
         // Get the session
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
 
-        if (user != null) {
-            // User is Logged in
-            response.sendRedirect("home");
-            return; // Stop code call after redirect it
+        // Check if it is a logout requisition
+        String logoutParam = request.getParameter("logout");
+        if (logoutParam != null) {
+            // Destroy the session
+            session.invalidate();
+        } else {
+
+            // Gets user from the session (if not logged it will be null)
+            User user = (User) session.getAttribute("user");
+
+            if (user != null) {
+                // User is Logged in
+                response.sendRedirect("home");
+                return; // Stop code call after redirect it
+            }
         }
 
         // load the JSP
@@ -38,16 +48,18 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
         String message = "";
 
-        AccountService accountService = new AccountService();
-        User user = accountService.login(username, password);
-        if (user == null) {
-            request.setAttribute("message", "Invalid credentials");
-        } else {
-            // Get the session
-            HttpSession session = request.getSession();
-            session.setAttribute("user", user);
-            response.sendRedirect("home");
-            return; // Stop code call after redirect it
+        if (!username.isEmpty() && !password.isEmpty()) {
+            AccountService accountService = new AccountService();
+            User user = accountService.login(username, password);
+            if (user == null) {
+                request.setAttribute("message", "Invalid credentials");
+            } else {
+                // Get the session
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
+                response.sendRedirect("home");
+                return; // Stop code call after redirect it
+            }
         }
 
         // load the JSP
